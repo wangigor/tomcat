@@ -159,11 +159,13 @@ public final class Bootstrap {
     private ClassLoader createClassLoader(String name, ClassLoader parent)
         throws Exception {
 
+        //catalina.properties
         String value = CatalinaProperties.getProperty(name + ".loader");
         if ((value == null) || (value.equals(""))) {
             return parent;
         }
 
+        //替换绝对路径
         value = replace(value);
 
         List<Repository> repositories = new ArrayList<>();
@@ -249,8 +251,12 @@ public final class Bootstrap {
      */
     public void init() throws Exception {
 
+        //初始化Classerloaders
+        //                           ->catalina
+        //Boot->Platform->App->Common->shared
         initClassLoaders();
 
+        //启动线程ClassLoader设置为catalinaLoader
         Thread.currentThread().setContextClassLoader(catalinaLoader);
 
         SecurityClassLoad.securityClassLoad(catalinaLoader);
@@ -259,6 +265,8 @@ public final class Bootstrap {
         if (log.isDebugEnabled()) {
             log.debug("Loading startup class");
         }
+
+        //实例化Catalina classLoader设置为SharedLoader
         Class<?> startupClass = catalinaLoader.loadClass("org.apache.catalina.startup.Catalina");
         Object startupInstance = startupClass.getConstructor().newInstance();
 
